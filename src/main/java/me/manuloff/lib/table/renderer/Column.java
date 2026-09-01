@@ -1,9 +1,10 @@
 package me.manuloff.lib.table.renderer;
 
-import lombok.AccessLevel;
 import lombok.Data;
-import lombok.Getter;
 import lombok.NonNull;
+import lombok.Getter;
+
+
 import me.manuloff.lib.table.renderer.style.TableStyle;
 import me.manuloff.lib.table.renderer.style.TextStyle;
 
@@ -12,50 +13,72 @@ import java.util.function.Consumer;
 import java.util.stream.Collectors;
 
 /**
+ * Колонка таблицы.
+ *
  * @author Manuloff
- * @since 18:48 21.01.2025
+ * @since 1.0
  */
 @Data
-@Getter(AccessLevel.NONE)
+@Getter
 public final class Column {
 
-	private final Table table;
-	@Getter
-	private final int index;
+    private final Table table;
+    private final int index;
 
-	@NonNull
-	private final TableStyle tableStyle = new TableStyle();
-	@NonNull
-	private final TextStyle textStyle = new TextStyle();
+    @NonNull
+    private final TableStyle tableStyle = new TableStyle();
+    @NonNull
+    private final TextStyle textStyle = new TextStyle();
 
-	@NonNull
-	public List<Cell> getCells() {
-		return this.table.getCells().stream()
-				.filter(cell -> cell.getCol() == this.index)
-				.collect(Collectors.toList());
-	}
+    // Фиксированная ширина колонки (null = авто)
+    private Integer fixedWidth;
 
-	//
+    public Column(Table table, int index) {
+        this.table = table;
+        this.index = index;
+    }
 
-	@NonNull
-	public TableStyle tableStyle() {
-		return this.tableStyle;
-	}
+    @NonNull
+    public List<Cell> getCells() {
+        return this.table.getCells().stream()
+                .filter(cell -> cell.getCol() == this.index)
+                .collect(Collectors.toList());
+    }
 
-	@NonNull
-	public Column tableStyle(@NonNull Consumer<TableStyle> consumer) {
-		consumer.accept(this.tableStyle);
-		return this;
-	}
+    // === Styles ===
 
-	@NonNull
-	public TextStyle textStyle() {
-		return this.textStyle;
-	}
+    @NonNull
+    public TableStyle tableStyle() {
+        return this.tableStyle;
+    }
 
-	@NonNull
-	public Column textStyle(@NonNull Consumer<TextStyle> consumer) {
-		consumer.accept(this.textStyle);
-		return this;
-	}
+    @NonNull
+    public Column tableStyle(Consumer<TableStyle> consumer) {
+        consumer.accept(this.tableStyle);
+        return this;
+    }
+
+    @NonNull
+    public TextStyle textStyle() {
+        return this.textStyle;
+    }
+
+    @NonNull
+    public Column textStyle(Consumer<TextStyle> consumer) {
+        consumer.accept(this.textStyle);
+        return this;
+    }
+
+    // === Fixed width ===
+
+    
+    public Integer fixedWidth() {
+        return this.fixedWidth;
+    }
+
+    @NonNull
+    public Column fixedWidth(Integer width) {
+        this.fixedWidth = width;
+        return this;
+    }
 }

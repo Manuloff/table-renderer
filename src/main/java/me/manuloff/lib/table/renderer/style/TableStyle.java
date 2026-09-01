@@ -1,13 +1,20 @@
 package me.manuloff.lib.table.renderer.style;
 
-import lombok.*;
+import lombok.Data;
+import lombok.NoArgsConstructor;
+import lombok.AllArgsConstructor;
+import lombok.NonNull;
 import lombok.experimental.Accessors;
 
 import java.awt.*;
+import java.util.List;
 
 /**
+ * Стиль таблицы (аналог CSS table/td/th стилей).
+ * Поддерживает все основные CSS свойства.
+ *
  * @author Manuloff
- * @since 19:46 03.09.2025
+ * @since 1.0
  */
 @Data
 @Accessors(fluent = true)
@@ -15,56 +22,112 @@ import java.awt.*;
 @AllArgsConstructor
 public final class TableStyle implements Cloneable {
 
-	public static final TableStyle DEFAULT = new TableStyle(
-			Color.WHITE,
-			new Padding(1),
-			1,
-			Color.BLACK,
-			0,
-			0
-	);
+    /**
+     * Стиль по умолчанию
+     */
+    public static final TableStyle DEFAULT = new TableStyle();
 
-	//
+    // === Базовые свойства ===
 
-	private Color backgroundColor;
+    private Color backgroundColor;
+    private Padding padding;
 
-	private Padding padding;
+    // === Ширина и высота ===
 
-	private Integer borderWidth;
-	private Color borderColor;
+    private Integer width;
+    private Integer height;
+    private Integer minWidth;
+    private Integer maxWidth;
+    private Integer minHeight;
+    private Integer maxHeight;
 
-	private Integer minCellWidth;
-	private Integer minCellHeight;
+    // === Границы ===
 
-	//
+    private Border border;
+    private Integer borderWidth;
+    private Color borderColor;
 
-	@Override
-	@SneakyThrows
-	public TableStyle clone() {
-		TableStyle tableStyle = (TableStyle) super.clone();
+    // === Border-collapse и spacing ===
 
-		tableStyle.backgroundColor = this.backgroundColor;
+    private BorderCollapse borderCollapse;
+    private Integer borderSpacing;
 
-		tableStyle.padding = this.padding;
+    // === Внешний вид ===
 
-		tableStyle.borderWidth = this.borderWidth;
-		tableStyle.borderColor = this.borderColor;
+    private Float borderRadius;
 
-		tableStyle.minCellWidth = this.minCellWidth;
-		tableStyle.minCellHeight = this.minCellHeight;
+    // === Конструктор с базовыми значениями ===
+    {
+        this.padding = new Padding(10);
+        this.border = Border.DEFAULT;
+        this.borderCollapse = BorderCollapse.COLLAPSE;
+        this.borderSpacing = 0;
+        this.borderRadius = 0f;
+    }
 
-		return tableStyle;
-	}
+    @Override
+    public TableStyle clone() {
+        TableStyle cloned = new TableStyle();
 
-	public void applyTo(@NonNull TableStyle style) {
-		if (this.backgroundColor != null) style.backgroundColor = this.backgroundColor;
+        cloned.backgroundColor = this.backgroundColor;
+        cloned.padding = this.padding;
+        cloned.width = this.width;
+        cloned.height = this.height;
+        cloned.minWidth = this.minWidth;
+        cloned.maxWidth = this.maxWidth;
+        cloned.minHeight = this.minHeight;
+        cloned.maxHeight = this.maxHeight;
+        cloned.border = this.border;
+        cloned.borderWidth = this.borderWidth;
+        cloned.borderColor = this.borderColor;
+        cloned.borderCollapse = this.borderCollapse;
+        cloned.borderSpacing = this.borderSpacing;
+        cloned.borderRadius = this.borderRadius;
 
-		if (this.padding != null) style.padding = this.padding;
+        return cloned;
+    }
 
-		if (this.borderWidth != null) style.borderWidth = this.borderWidth;
-		if (this.borderColor != null) style.borderColor = this.borderColor;
+    /**
+     * Применяет значения этого стиля к целевому стилю (не-null значения перезаписывают)
+     */
+    public void applyTo(@NonNull TableStyle target) {
+        if (this.backgroundColor != null) target.backgroundColor = this.backgroundColor;
+        if (this.padding != null) target.padding = this.padding;
 
-		if (this.minCellWidth != null) style.minCellWidth = this.minCellWidth;
-		if (this.minCellHeight != null) style.minCellHeight = this.minCellHeight;
-	}
+        if (this.width != null) target.width = this.width;
+        if (this.height != null) target.height = this.height;
+        if (this.minWidth != null) target.minWidth = this.minWidth;
+        if (this.maxWidth != null) target.maxWidth = this.maxWidth;
+        if (this.minHeight != null) target.minHeight = this.minHeight;
+        if (this.maxHeight != null) target.maxHeight = this.maxHeight;
+
+        if (this.border != null) target.border = this.border;
+        if (this.borderWidth != null) target.borderWidth = this.borderWidth;
+        if (this.borderColor != null) target.borderColor = this.borderColor;
+
+        if (this.borderCollapse != null) target.borderCollapse = this.borderCollapse;
+        if (this.borderSpacing != null) target.borderSpacing = this.borderSpacing;
+
+        if (this.borderRadius != null) target.borderRadius = this.borderRadius;
+    }
+
+    // === Удобные методы ===
+
+    /**
+     * Устанавливает border сплошной линией
+     */
+    public TableStyle border(int width, Color color) {
+        Border.BorderSide side = new Border.BorderSide(BorderStyle.SOLID, width, color);
+        this.border = new Border(side, side, side, side);
+        return this;
+    }
+
+    /**
+     * Устанавливает border с указанным стилем
+     */
+    public TableStyle border(BorderStyle style, int width, Color color) {
+        Border.BorderSide side = new Border.BorderSide(style, width, color);
+        this.border = new Border(side, side, side, side);
+        return this;
+    }
 }
