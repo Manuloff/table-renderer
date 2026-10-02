@@ -325,6 +325,7 @@ public final class Cell {
     /**
      * Возвращает эффективный TableStyle с учётом иерархии и состояния.
      */
+    public TableStyle getEffectiveTableStyle() {
         TableStyle style = new TableStyle();
 
         // Базовый стиль таблицы
