@@ -21,11 +21,26 @@ import java.util.Map;
 @Getter
 public final class RenderedTable {
 
+    /**
+     * Исходная таблица, из которой построен результат.
+     */
     private final Table table;
+    /**
+     * Логическая ширина таблицы в пикселях (до масштаба {@link RenderQuality}).
+     */
     private final int width;
+    /**
+     * Логическая высота таблицы в пикселях (до масштаба {@link RenderQuality}).
+     */
     private final int height;
+    /**
+     * Готовое изображение. Его размер равен логическому, умноженному на {@link RenderQuality#getScale()}.
+     */
     private final BufferedImage image;
 
+    /**
+     * @return отрисованное изображение таблицы ({@code TYPE_INT_ARGB})
+     */
     public BufferedImage getImage() {
         return this.image;
     }

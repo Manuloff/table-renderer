@@ -23,6 +23,11 @@ public final class Padding {
     private final int left;
     private final int right;
 
+    /**
+     * Создаёт отступы для каждой стороны.
+     *
+     * @throws IllegalArgumentException если любое значение отрицательное
+     */
     public Padding(int top, int bottom, int left, int right) {
         validatePadding(top, "Top");
         validatePadding(bottom, "Bottom");

@@ -41,18 +41,30 @@ public enum RenderQuality {
         this.highQuality = highQuality;
     }
 
+    /**
+     * @return множитель размера итогового {@code BufferedImage} относительно логического размера таблицы
+     */
     public double getScale() {
         return scale;
     }
 
+    /**
+     * @return включено ли сглаживание фигур и текста
+     */
     public boolean isAntialiasing() {
         return antialiasing;
     }
 
+    /**
+     * @return использовать ли дробные метрики шрифта
+     */
     public boolean isFractionalMetrics() {
         return fractionalMetrics;
     }
 
+    /**
+     * @return включать ли набор hints максимального качества отрисовки
+     */
     public boolean isHighQuality() {
         return highQuality;
     }

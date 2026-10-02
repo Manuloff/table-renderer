@@ -8,10 +8,15 @@ package me.manuloff.lib.table.renderer.style;
  */
 public enum BorderStyle {
 
+    /** Без линии. */
     NONE(0, false),
+    /** Сплошная линия. */
     SOLID(1, true),
+    /** Штриховая линия. */
     DASHED(2, true),
+    /** Пунктир (точки). */
     DOTTED(3, true),
+    /** Двойная линия. */
     DOUBLE(4, true);
 
     private final int type;
@@ -22,10 +27,16 @@ public enum BorderStyle {
         this.filled = filled;
     }
 
+    /**
+     * @return числовой идентификатор стиля
+     */
     public int getType() {
         return type;
     }
 
+    /**
+     * @return {@code true}, если стиль предполагает видимую линию
+     */
     public boolean isFilled() {
         return filled;
     }

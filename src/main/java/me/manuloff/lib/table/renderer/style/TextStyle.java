@@ -26,31 +26,45 @@ public final class TextStyle implements Cloneable {
 
     // === Шрифт ===
 
+    /** Имя семейства шрифта. По умолчанию {@code Arial}. */
     private String fontName;
+    /** Базовый {@link Font} style, если не заданы флаги bold/italic. По умолчанию {@link Font#PLAIN}. */
     private Integer fontStyle;
+    /** Размер шрифта в пунктах. По умолчанию {@code 12}. */
     private Integer fontSize;
 
     // === Текст ===
 
+    /** Цвет текста. По умолчанию чёрный. */
     private Color textColor;
+    /** Выравнивание блока текста в ячейке. По умолчанию {@link Alignment#TOP_LEFT}. */
     private Alignment textAlignment;
+    /** Множитель межстрочного интервала. По умолчанию {@code 1.0}. */
     private Float lineHeight;
 
     // === Вертикальное выравнивание ===
 
+    /** Отдельное вертикальное выравнивание. По умолчанию {@code TOP}. */
     private VerticalAlign verticalAlign;
 
     // === Перенос текста ===
 
+    /** Перенос по словам. По умолчанию {@code false}. */
     private Boolean wordWrap;
+    /** Флаг переполнения (хранится в стиле). По умолчанию {@code false}. */
     private Boolean overflow;
+    /** Режим обрезки переполнения. По умолчанию {@code "ellipsis"}. */
     private String textOverflow;
 
     // === Дополнительные эффекты ===
 
+    /** Жирное начертание. По умолчанию {@code false}. */
     private Boolean bold;
+    /** Курсив. По умолчанию {@code false}. */
     private Boolean italic;
+    /** Подчёркивание. По умолчанию {@code false}. */
     private Boolean underline;
+    /** Зачёркивание. По умолчанию {@code false}. */
     private Boolean strikethrough;
 
     // === Конструктор с базовыми значениями ===

@@ -37,21 +37,46 @@ public final class Table {
     @NonNull
     private final TextStyle textStyle = new TextStyle();
 
-    // Качество рендеринга
+    /**
+     * Качество рендеринга. По умолчанию {@link RenderQuality#HIGH}.
+     */
     private RenderQuality renderQuality = RenderQuality.HIGH;
 
-    // Фиксированная ширина таблицы
+    /**
+     * Фиксированная логическая ширина таблицы в пикселях; {@code null} — по содержимому.
+     */
     private Integer fixedWidth;
-    // Фиксированная высота таблицы
+    /**
+     * Фиксированная логическая высота таблицы в пикселях; {@code null} — по содержимому.
+     */
     private Integer fixedHeight;
 
     // === Cell ===
 
+    /**
+     * Возвращает ячейку {@code 1×1} в позиции {@code (row, col)}.
+     * Если позиция уже занята существующей ячейкой (в том числе из-за span), возвращается она.
+     *
+     * @param row индекс строки (с нуля)
+     * @param col индекс колонки (с нуля)
+     * @throws IllegalArgumentException если индекс отрицательный
+     */
     @NonNull
     public Cell getCell(int row, int col) {
         return getCell(row, col, 1, 1);
     }
 
+    /**
+     * Возвращает ячейку с указанным объединением.
+     * Если позиция пересекается с уже созданной ячейкой, возвращается существующая
+     * (новые {@code rowspan}/{@code colspan} при этом не применяются).
+     *
+     * @param row     индекс строки левого верхнего угла (с нуля)
+     * @param col     индекс колонки левого верхнего угла (с нуля)
+     * @param rowspan число занимаемых строк, не меньше 1
+     * @param colspan число занимаемых колонок, не меньше 1
+     * @throws IllegalArgumentException если индекс отрицательный или span меньше 1
+     */
     @NonNull
     public Cell getCell(int row, int col, int rowspan, int colspan) {
         if (row < 0) throw new IllegalArgumentException("Row can't be negative. Provided: " + row);
@@ -74,6 +99,11 @@ public final class Table {
 
     // === Row ===
 
+    /**
+     * Возвращает строку с индексом {@code row}, создавая её при первом обращении.
+     *
+     * @param row индекс строки (с нуля)
+     */
     @NonNull
     public Row getRow(int row) {
         return this.rows.computeIfAbsent(row, i -> new Row(this, i));
@@ -93,6 +123,11 @@ public final class Table {
 
     // === Column ===
 
+    /**
+     * Возвращает колонку с индексом {@code col}, создавая её при первом обращении.
+     *
+     * @param col индекс колонки (с нуля)
+     */
     @NonNull
     public Column getColumn(int col) {
         return this.columns.computeIfAbsent(col, i -> new Column(this, i));
@@ -112,22 +147,34 @@ public final class Table {
 
     // === Table styles ===
 
+    /**
+     * @return глобальный стиль оформления таблицы
+     */
     @NonNull
     public TableStyle tableStyle() {
         return this.tableStyle;
     }
 
+    /**
+     * Настраивает глобальный {@link TableStyle} и возвращает эту таблицу.
+     */
     @NonNull
     public Table tableStyle(Consumer<TableStyle> consumer) {
         consumer.accept(this.tableStyle);
         return this;
     }
 
+    /**
+     * @return глобальный стиль текста таблицы
+     */
     @NonNull
     public TextStyle textStyle() {
         return this.textStyle;
     }
 
+    /**
+     * Настраивает глобальный {@link TextStyle} и возвращает эту таблицу.
+     */
     @NonNull
     public Table textStyle(Consumer<TextStyle> consumer) {
         consumer.accept(this.textStyle);
@@ -136,6 +183,11 @@ public final class Table {
 
     // === Render ===
 
+    /**
+     * Считает раскладку и рисует таблицу в изображение.
+     *
+     * @return результат рендеринга с логическим размером и {@link java.awt.image.BufferedImage}
+     */
     @NonNull
     public RenderedTable render() {
         return new RenderedTable(this);

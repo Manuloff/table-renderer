@@ -29,16 +29,27 @@ public final class Text {
     @Getter(AccessLevel.NONE)
     private final TextStyle textStyle = new TextStyle();
 
+    /**
+     * Создаёт текстовый фрагмент с указанной строкой.
+     *
+     * @param text содержимое фрагмента
+     */
     public Text(String text) {
         this.text = text;
     }
 
+    /**
+     * Настраивает стиль этого фрагмента и возвращает его.
+     */
     @NonNull
     public Text textStyle(Consumer<TextStyle> consumer) {
         consumer.accept(this.textStyle);
         return this;
     }
 
+    /**
+     * @return стиль этого текстового фрагмента
+     */
     @NonNull
     public TextStyle textStyle() {
         return this.textStyle;

@@ -29,12 +29,16 @@ public final class TableStyle implements Cloneable {
 
     // === Базовые свойства ===
 
+    /** Цвет фона. {@code null} — без заливки. */
     private Color backgroundColor;
+    /** Внутренние отступы. По умолчанию {@code new Padding(10)}. */
     private Padding padding;
 
     // === Ширина и высота ===
 
+    /** Желаемая ширина (хранится в стиле; раскладку рендерер берёт из размеров Table/Row/Column/Cell). */
     private Integer width;
+    /** Желаемая высота (хранится в стиле; раскладку рендерер берёт из размеров Table/Row/Column/Cell). */
     private Integer height;
     private Integer minWidth;
     private Integer maxWidth;
@@ -43,17 +47,23 @@ public final class TableStyle implements Cloneable {
 
     // === Границы ===
 
+    /** Рамка по сторонам. По умолчанию {@code Border.DEFAULT}. */
     private Border border;
+    /** Толщина рамки (хранится в стиле; рендерер рисует стороны из {@link #border}). */
     private Integer borderWidth;
+    /** Цвет рамки (хранится в стиле; рендерер рисует стороны из {@link #border}). */
     private Color borderColor;
 
     // === Border-collapse и spacing ===
 
+    /** Режим объединения рамок. По умолчанию {@link BorderCollapse#COLLAPSE}. */
     private BorderCollapse borderCollapse;
+    /** Зазор между ячейками в режиме {@code SEPARATE}. По умолчанию {@code 0}. */
     private Integer borderSpacing;
 
     // === Внешний вид ===
 
+    /** Радиус скругления углов. По умолчанию {@code 0}. */
     private Float borderRadius;
 
     // === Конструктор с базовыми значениями ===
