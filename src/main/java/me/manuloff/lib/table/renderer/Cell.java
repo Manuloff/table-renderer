@@ -1,285 +1,199 @@
 package me.manuloff.lib.table.renderer;
 
-import lombok.Data;
-import lombok.Getter;
-import me.manuloff.lib.table.renderer.style.TableStyle;
-import me.manuloff.lib.table.renderer.style.TextStyle;
+import lombok.NonNull;
+import me.manuloff.lib.table.renderer.content.RichText;
+import me.manuloff.lib.table.renderer.style.Style;
 
-import java.util.Collections;
-import java.util.LinkedList;
-import java.util.List;
 import java.util.function.Consumer;
 
 /**
  * Ячейка таблицы.
+ * <p>
+ * Содержимое задаётся одним из двух способов:
+ * <ul>
+ *     <li>значением ({@link #value(Object)}): строки выводятся как есть, {@link RichText}, строчные узлы
+ *     и изображения ({@code BufferedImage}) - как содержимое, остальное - через
+ *     {@link Table#formatter(java.util.function.Function)};</li>
+ *     <li>форматированным текстом ({@link #content(Consumer)}), который имеет приоритет над значением.</li>
+ * </ul>
+ * Значение доступно условным правилам ({@link me.manuloff.lib.table.renderer.rule.CellContext#value()}),
+ * поэтому удобно хранить в ячейке исходные данные, а оформлять их правилами.
  *
  * @author Manuloff
- * @since 1.0
+ * @since 2.0
  */
-@Data
-@Getter
 public final class Cell {
 
-    private final Table table;
+    private final Row row;
+    private final RichText content = new RichText();
+    private final Style style = new Style();
 
-    private final int row;
-    private final int col;
-    private final int rowspan;
-    private final int colspan;
+    private Object value;
+    private int colspan = 1;
+    private int rowspan = 1;
+    private boolean header;
 
-    private final TableStyle tableStyle = new TableStyle();
-    private final TextStyle textStyle = new TextStyle();
-
-    // Hover/Focus/Active состояния
-    private final TableStyle hoverStyle = new TableStyle();
-    private final TableStyle focusStyle = new TableStyle();
-    private final TableStyle activeStyle = new TableStyle();
-
-    // Тексты в ячейке
-    private List<Text> texts = new LinkedList<>();
-
-    // Фиксированные размеры ячейки
-    private Integer fixedWidth;
-    private Integer fixedHeight;
-    private Integer minWidth;
-    private Integer maxWidth;
-    private Integer minHeight;
-    private Integer maxHeight;
-
-    // Состояния
-    private boolean isHovered;
-    private boolean isFocused;
-    private boolean isActive;
-
-    public Cell(Table table, int row, int col, int rowspan, int colspan) {
-        this.table = table;
+    Cell(Row row, Object value, boolean header) {
         this.row = row;
-        this.col = col;
-        this.rowspan = rowspan;
+        this.value = value;
+        this.header = header;
+    }
+
+    // ============================================
+    // Связи
+    // ============================================
+
+    /**
+     * @return строка, которой принадлежит ячейка
+     */
+    public Row row() {
+        return this.row;
+    }
+
+    /**
+     * @return секция, которой принадлежит ячейка
+     */
+    public Section section() {
+        return this.row.section();
+    }
+
+    /**
+     * @return таблица, которой принадлежит ячейка
+     */
+    public Table table() {
+        return this.row.section().table();
+    }
+
+    // ============================================
+    // Содержимое
+    // ============================================
+
+    /**
+     * @return значение ячейки
+     */
+    public Object value() {
+        return this.value;
+    }
+
+    /**
+     * Задаёт значение ячейки и очищает явное содержимое.
+     */
+    public Cell value(Object value) {
+        this.value = value;
+        this.content.clear();
+        return this;
+    }
+
+    /**
+     * Задаёт текст ячейки (то же, что {@link #value(Object)} со строкой).
+     */
+    public Cell text(String text) {
+        return value(text);
+    }
+
+    /**
+     * @return явное форматированное содержимое; если оно не пустое, значение при отрисовке игнорируется
+     */
+    public RichText content() {
+        return this.content;
+    }
+
+    /**
+     * Заполняет явное форматированное содержимое.
+     *
+     * <pre>{@code
+     * cell.content(c -> c.text("Итого: ").bold("1 250 ₽"));
+     * }</pre>
+     */
+    public Cell content(@NonNull Consumer<RichText> consumer) {
+        consumer.accept(this.content);
+        return this;
+    }
+
+    // ============================================
+    // Стиль
+    // ============================================
+
+    /**
+     * @return собственный стиль ячейки (самый приоритетный уровень)
+     */
+    public Style style() {
+        return this.style;
+    }
+
+    /**
+     * Настраивает стиль ячейки.
+     */
+    public Cell style(@NonNull Consumer<Style> consumer) {
+        consumer.accept(this.style);
+        return this;
+    }
+
+    // ============================================
+    // Объединение
+    // ============================================
+
+    /**
+     * @return количество занимаемых колонок
+     */
+    public int colspan() {
+        return this.colspan;
+    }
+
+    /**
+     * Задаёт количество занимаемых колонок.
+     */
+    public Cell colspan(int colspan) {
+        if (colspan < 1) throw new IllegalArgumentException("Colspan must be at least 1: " + colspan);
         this.colspan = colspan;
-    }
-
-    // === Text ===
-
-    public Cell setTexts(List<Text> texts) {
-        this.texts = texts;
         return this;
-    }
-
-    public Cell setText(String text) {
-        this.texts = Collections.singletonList(new Text(text));
-        return this;
-    }
-
-    public Cell setText(Text text) {
-        this.texts = Collections.singletonList(text);
-        return this;
-    }
-
-    public Cell appendText(String text) {
-        this.texts.add(new Text(text));
-        return this;
-    }
-
-    public Cell appendText(Text text) {
-        this.texts.add(text);
-        return this;
-    }
-
-    public Cell appendNewLine() {
-        this.texts.add(Text.NEW_LINE);
-        return this;
-    }
-
-    // === Styles ===
-
-    public TableStyle tableStyle() {
-        return this.tableStyle;
-    }
-
-    public Cell tableStyle(Consumer<TableStyle> consumer) {
-        consumer.accept(this.tableStyle);
-        return this;
-    }
-
-    public TextStyle textStyle() {
-        return this.textStyle;
-    }
-
-    public Cell textStyle(Consumer<TextStyle> consumer) {
-        consumer.accept(this.textStyle);
-        return this;
-    }
-
-    // === Hover style ===
-
-    public TableStyle hoverStyle() {
-        return this.hoverStyle;
-    }
-
-    public Cell hoverStyle(Consumer<TableStyle> consumer) {
-        consumer.accept(this.hoverStyle);
-        return this;
-    }
-
-    // === Focus style ===
-
-    public TableStyle focusStyle() {
-        return this.focusStyle;
-    }
-
-    public Cell focusStyle(Consumer<TableStyle> consumer) {
-        consumer.accept(this.focusStyle);
-        return this;
-    }
-
-    // === Active style ===
-
-    public TableStyle activeStyle() {
-        return this.activeStyle;
-    }
-
-    public Cell activeStyle(Consumer<TableStyle> consumer) {
-        consumer.accept(this.activeStyle);
-        return this;
-    }
-
-    // === Fixed dimensions ===
-
-    public Integer fixedWidth() {
-        return this.fixedWidth;
-    }
-
-    public Cell fixedWidth(Integer width) {
-        this.fixedWidth = width;
-        return this;
-    }
-
-    public Integer fixedHeight() {
-        return this.fixedHeight;
-    }
-
-    public Cell fixedHeight(Integer height) {
-        this.fixedHeight = height;
-        return this;
-    }
-
-    public Integer minWidth() {
-        return this.minWidth;
-    }
-
-    public Cell minWidth(Integer width) {
-        this.minWidth = width;
-        return this;
-    }
-
-    public Integer maxWidth() {
-        return this.maxWidth;
-    }
-
-    public Cell maxWidth(Integer width) {
-        this.maxWidth = width;
-        return this;
-    }
-
-    public Integer minHeight() {
-        return this.minHeight;
-    }
-
-    public Cell minHeight(Integer height) {
-        this.minHeight = height;
-        return this;
-    }
-
-    public Integer maxHeight() {
-        return this.maxHeight;
-    }
-
-    public Cell maxHeight(Integer height) {
-        this.maxHeight = height;
-        return this;
-    }
-
-    // === State ===
-
-    public Cell hovered(boolean hovered) {
-        this.isHovered = hovered;
-        return this;
-    }
-
-    public Cell focused(boolean focused) {
-        this.isFocused = focused;
-        return this;
-    }
-
-    public Cell active(boolean active) {
-        this.isActive = active;
-        return this;
-    }
-
-    // === Effective style resolution ===
-
-    /**
-     * Возвращает эффективный TableStyle с учётом состояния
-     */
-    public TableStyle getEffectiveTableStyle() {
-        TableStyle style = new TableStyle();
-
-        // Базовый стиль таблицы
-        table.tableStyle().applyTo(style);
-        // Строка
-        table.getRow(row).tableStyle().applyTo(style);
-        // Колонка
-        table.getColumn(col).tableStyle().applyTo(style);
-        // Row group
-        applyRowGroupStyle(style);
-        // Ячейка
-        tableStyle().applyTo(style);
-
-        // Hover/Focus/Active overrides
-        if (isActive) {
-            activeStyle().applyTo(style);
-        }
-        if (isFocused) {
-            focusStyle().applyTo(style);
-        }
-        if (isHovered) {
-            hoverStyle().applyTo(style);
-        }
-
-        return style;
     }
 
     /**
-     * Возвращает эффективный TextStyle с учётом иерархии
+     * @return количество занимаемых строк
      */
-    public TextStyle getEffectiveTextStyle() {
-        TextStyle style = new TextStyle();
-
-        table.textStyle().applyTo(style);
-        table.getRow(row).textStyle().applyTo(style);
-        table.getColumn(col).textStyle().applyTo(style);
-        applyRowGroupTextStyle(style);
-        textStyle().applyTo(style);
-
-        return style;
+    public int rowspan() {
+        return this.rowspan;
     }
 
-    private void applyRowGroupStyle(TableStyle style) {
-        for (RowGroup group : new RowGroup[]{table.thead(), table.tbody(), table.tfoot()}) {
-            if (group.getRowIndices().contains(row)) {
-                group.tableStyle().applyTo(style);
-                break;
-            }
-        }
+    /**
+     * Задаёт количество занимаемых строк. Объединение не выходит за пределы секции.
+     */
+    public Cell rowspan(int rowspan) {
+        if (rowspan < 1) throw new IllegalArgumentException("Rowspan must be at least 1: " + rowspan);
+        this.rowspan = rowspan;
+        return this;
     }
 
-    private void applyRowGroupTextStyle(TextStyle style) {
-        for (RowGroup group : new RowGroup[]{table.thead(), table.tbody(), table.tfoot()}) {
-            if (group.getRowIndices().contains(row)) {
-                group.textStyle().applyTo(style);
-                break;
-            }
-        }
+    /**
+     * Задаёт объединение по колонкам и строкам.
+     */
+    public Cell span(int colspan, int rowspan) {
+        return colspan(colspan).rowspan(rowspan);
+    }
+
+    // ============================================
+    // Заголовочная ячейка
+    // ============================================
+
+    /**
+     * @return true для заголовочной ячейки (аналог th): по умолчанию - все ячейки шапки
+     */
+    public boolean header() {
+        return this.header;
+    }
+
+    /**
+     * Помечает ячейку как заголовочную. Заголовочные ячейки по умолчанию жирные и выбираются
+     * условием {@link me.manuloff.lib.table.renderer.rule.Match#headerCells()}.
+     */
+    public Cell header(boolean header) {
+        this.header = header;
+        return this;
+    }
+
+    @Override
+    public String toString() {
+        return "Cell[" + (this.content.isEmpty() ? this.value : this.content) + "]";
     }
 }

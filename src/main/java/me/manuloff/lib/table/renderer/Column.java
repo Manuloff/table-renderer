@@ -1,84 +1,77 @@
 package me.manuloff.lib.table.renderer;
 
-import lombok.Data;
 import lombok.NonNull;
-import lombok.Getter;
+import me.manuloff.lib.table.renderer.style.Style;
+import me.manuloff.lib.table.renderer.style.box.Size;
 
-
-import me.manuloff.lib.table.renderer.style.TableStyle;
-import me.manuloff.lib.table.renderer.style.TextStyle;
-
-import java.util.List;
 import java.util.function.Consumer;
-import java.util.stream.Collectors;
 
 /**
  * Колонка таблицы.
+ * <p>
+ * Стиль колонки применяется к ячейкам, начинающимся в этой колонке (поверх стиля секции, под стилем строки),
+ * со следующими особенностями:
+ * <ul>
+ *     <li>ширина ({@link #width(double)}) задаёт ширину самой колонки;</li>
+ *     <li>фон рисуется одним слоем на всю высоту колонки.</li>
+ * </ul>
  *
  * @author Manuloff
- * @since 1.0
+ * @since 2.0
  */
-@Data
-@Getter
 public final class Column {
 
     private final Table table;
     private final int index;
+    private final Style style = new Style();
 
-    @NonNull
-    private final TableStyle tableStyle = new TableStyle();
-    @NonNull
-    private final TextStyle textStyle = new TextStyle();
-
-    // Фиксированная ширина колонки (null = авто)
-    private Integer fixedWidth;
-
-    public Column(Table table, int index) {
+    Column(Table table, int index) {
         this.table = table;
         this.index = index;
     }
 
-    @NonNull
-    public List<Cell> getCells() {
-        return this.table.getCells().stream()
-                .filter(cell -> cell.getCol() == this.index)
-                .collect(Collectors.toList());
+    /**
+     * @return таблица, которой принадлежит колонка
+     */
+    public Table table() {
+        return this.table;
     }
 
-    // === Styles ===
-
-    @NonNull
-    public TableStyle tableStyle() {
-        return this.tableStyle;
+    /**
+     * @return индекс колонки (с нуля)
+     */
+    public int index() {
+        return this.index;
     }
 
-    @NonNull
-    public Column tableStyle(Consumer<TableStyle> consumer) {
-        consumer.accept(this.tableStyle);
+    /**
+     * @return стиль ячеек колонки
+     */
+    public Style style() {
+        return this.style;
+    }
+
+    /**
+     * Настраивает стиль ячеек колонки.
+     */
+    public Column style(@NonNull Consumer<Style> consumer) {
+        consumer.accept(this.style);
         return this;
     }
 
-    @NonNull
-    public TextStyle textStyle() {
-        return this.textStyle;
-    }
-
-    @NonNull
-    public Column textStyle(Consumer<TextStyle> consumer) {
-        consumer.accept(this.textStyle);
+    /**
+     * Задаёт ширину колонки в пикселях (включая отступы и рамки ячеек).
+     */
+    public Column width(double px) {
+        this.style.width(px);
         return this;
     }
 
-    // === Fixed width ===
-
-    
-    public Integer fixedWidth() {
-        return this.fixedWidth;
-    }
-
-    @NonNull
-    public Column fixedWidth(Integer width) {
-        this.fixedWidth = width;
+    /**
+     * Задаёт ширину колонки в пикселях или процентах от ширины таблицы.
+     */
+    public Column width(@NonNull Size size) {
+        this.style.width(size);
         return this;
     }
 }
